@@ -1,4 +1,3 @@
-// components/layout/theme-provider.tsx
 'use client'
 
 import { ThemeProvider as NextThemesProvider } from 'next-themes'
@@ -16,11 +15,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return null
   }
 
-  return (
+  return (  
     <NextThemesProvider
       attribute="data-theme"
-      defaultTheme="dark" 
-      enableSystem={true}
+      defaultTheme="dark" // Default to dark theme
+      enableSystem={false} // Disable system theme detection for consistency
+      value={{
+        dark: 'dark',
+        light: 'light',
+      }}
     >
       {children}
     </NextThemesProvider>

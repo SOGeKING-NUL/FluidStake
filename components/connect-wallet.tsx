@@ -7,6 +7,8 @@ import { ethers } from "ethers"
 import { useToast } from "@/components/ui/use-toast"
 import { Loader2, X } from "lucide-react"
 import { useWalletStore } from "@/lib/store"
+import { useAccount, useConnect, useDisconnect } from "wagmi"
+import { InjectedConnector } from "wagmi/connectors/injected"
 
 interface ConnectWalletProps {
   onClose: () => void
@@ -16,13 +18,27 @@ export default function ConnectWallet({ onClose }: ConnectWalletProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [hasMetaMask, setHasMetaMask] = useState(false)
   const { toast } = useToast()
-  const { setAddress, setProvider, setSigner } = useWalletStore()
-
+  const { setConnectedWallet, disconnectWallet } = useWalletStore()
+  
+  // Wagmi hooks
+  const { address, isConnected } = useAccount()
+  const { connect } = useConnect({
+    connector: new InjectedConnector(),
+  })
+  const { disconnect } = useDisconnect()
+  
   useEffect(() => {
     if (typeof window !== "undefined") {
       setHasMetaMask(window.ethereum !== undefined)
     }
   }, [])
+  
+  // Update store when wallet connection changes
+  useEffect(() => {
+    if (isConnected && address) {
+      setConnectedWallet(address, 'metamask')
+    }
+  }, [isConnected, address, setConnectedWallet])
 
   const connectMetaMask = async () => {
     if (!window.ethereum) {
@@ -36,19 +52,13 @@ export default function ConnectWallet({ onClose }: ConnectWalletProps) {
 
     try {
       setIsLoading(true)
-      const provider = new ethers.BrowserProvider(window.ethereum)
-      const accounts = await provider.send("eth_requestAccounts", [])
-      const signer = await provider.getSigner()
-
-      setProvider(provider)
-      setSigner(signer)
-      setAddress(accounts[0])
-
+      await connect()
+      
       toast({
         title: "Wallet connected",
-        description: `Connected to ${accounts[0].substring(0, 6)}...${accounts[0].substring(38)}`,
+        description: `Connected to ${address?.substring(0, 6)}...${address?.substring(38)}`,
       })
-
+      
       onClose()
     } catch (error) {
       console.error("Error connecting to MetaMask:", error)
@@ -57,6 +67,25 @@ export default function ConnectWallet({ onClose }: ConnectWalletProps) {
         description: "Failed to connect to MetaMask",
         variant: "destructive",
       })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+  
+  const handleDisconnect = async () => {
+    try {
+      setIsLoading(true)
+      await disconnect()
+      disconnectWallet()
+      
+      toast({
+        title: "Wallet disconnected",
+        description: "Your wallet has been disconnected",
+      })
+      
+      onClose()
+    } catch (error) {
+      console.error("Error disconnecting wallet:", error)
     } finally {
       setIsLoading(false)
     }
@@ -74,22 +103,39 @@ export default function ConnectWallet({ onClose }: ConnectWalletProps) {
         <CardDescription>Connect your wallet to access all features</CardDescription>
       </CardHeader>
       <CardContent>
-        <Button
-          className="w-full flex items-center justify-center gap-2 h-14"
-          onClick={connectMetaMask}
-          disabled={isLoading || !hasMetaMask}
-        >
-          {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <>
-              <img src="/metamask.svg" alt="MetaMask" className="h-6 w-6" />
-              Connect with MetaMask
-            </>
-          )}
-        </Button>
+        {isConnected ? (
+          <div className="space-y-4">
+            <div className="p-4 border rounded-lg">
+              <p className="text-sm font-medium">Connected Address</p>
+              <p className="text-xs text-muted-foreground mt-1 break-all">{address}</p>
+            </div>
+            <Button
+              className="w-full"
+              variant="destructive"
+              onClick={handleDisconnect}
+              disabled={isLoading}
+            >
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Disconnect Wallet"}
+            </Button>
+          </div>
+        ) : (
+          <Button
+            className="w-full flex items-center justify-center gap-2 h-14"
+            onClick={connectMetaMask}
+            disabled={isLoading || !hasMetaMask}
+          >
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <>
+                <img src="/metamask.svg" alt="MetaMask" className="h-6 w-6" />
+                Connect with MetaMask
+              </>
+            )}
+          </Button>
+        )}
 
-        {!hasMetaMask && (
+        {!hasMetaMask && !isConnected && (
           <p className="text-sm text-muted-foreground mt-2 text-center">
             MetaMask not detected. Please install the{" "}
             <a
@@ -106,4 +152,4 @@ export default function ConnectWallet({ onClose }: ConnectWalletProps) {
     </Card>
   )
 }
-
+  

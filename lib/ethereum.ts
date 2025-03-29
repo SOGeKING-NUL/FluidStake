@@ -8,6 +8,23 @@ export const getProvider = () => {
   return new ethers.JsonRpcProvider(RPC_URL)
 }
 
+// Get a provider for the connected wallet
+export const getConnectedProvider = () => {
+  if (typeof window !== "undefined" && window.ethereum) {
+    return new ethers.BrowserProvider(window.ethereum)
+  }
+  return getProvider()
+}
+
+// Get a signer for the connected wallet
+export const getConnectedSigner = async () => {
+  const provider = getConnectedProvider()
+  if (provider instanceof ethers.BrowserProvider) {
+    return await provider.getSigner()
+  }
+  return null
+}
+
 // Generate a random mnemonic
 export const generateMnemonic = () => {
   return ethers.Wallet.createRandom().mnemonic?.phrase
@@ -35,9 +52,44 @@ export const getNativeBalance = async (address: string) => {
   return ethers.formatEther(balance)
 }
 
+// Get native token balance for connected wallet
+export const getConnectedWalletBalance = async (address: string) => {
+  const provider = getConnectedProvider()
+  const balance = await provider.getBalance(address)
+  return ethers.formatEther(balance)
+}
+
 // Get ERC20 token balance
 export const getTokenBalance = async (tokenAddress: string, walletAddress: string) => {
   const provider = getProvider()
+
+  // ERC20 token ABI (minimal for balanceOf function)
+  const abi = [
+    "function balanceOf(address owner) view returns (uint256)",
+    "function decimals() view returns (uint8)",
+    "function symbol() view returns (string)",
+  ]
+
+  const tokenContract = new ethers.Contract(tokenAddress, abi, provider)
+
+  try {
+    const balance = await tokenContract.balanceOf(walletAddress)
+    const decimals = await tokenContract.decimals()
+    const symbol = await tokenContract.symbol()
+
+    return {
+      balance: ethers.formatUnits(balance, decimals),
+      symbol,
+    }
+  } catch (error) {
+    console.error("Error getting token balance:", error)
+    throw error
+  }
+}
+
+// Get ERC20 token balance for connected wallet
+export const getConnectedWalletTokenBalance = async (tokenAddress: string, walletAddress: string) => {
+  const provider = getConnectedProvider()
 
   // ERC20 token ABI (minimal for balanceOf function)
   const abi = [
@@ -116,6 +168,27 @@ export const transferEth = async (privateKey: string, toAddress: string, amount:
   }
 }
 
+// Transfer ETH from connected wallet
+export const transferEthFromConnectedWallet = async (toAddress: string, amount: string) => {
+  const signer = await getConnectedSigner()
+  if (!signer) {
+    throw new Error("No connected wallet found")
+  }
+
+  const tx = {
+    to: toAddress,
+    value: ethers.parseEther(amount),
+  }
+
+  try {
+    const transaction = await signer.sendTransaction(tx)
+    return transaction
+  } catch (error) {
+    console.error("Error transferring ETH from connected wallet:", error)
+    throw error
+  }
+}
+
 // Transfer ERC20 token
 export const transferToken = async (privateKey: string, tokenAddress: string, toAddress: string, amount: string) => {
   const provider = getProvider()
@@ -135,6 +208,32 @@ export const transferToken = async (privateKey: string, tokenAddress: string, to
     return transaction
   } catch (error) {
     console.error("Error transferring token:", error)
+    throw error
+  }
+}
+
+// Transfer ERC20 token from connected wallet
+export const transferTokenFromConnectedWallet = async (tokenAddress: string, toAddress: string, amount: string) => {
+  const signer = await getConnectedSigner()
+  if (!signer) {
+    throw new Error("No connected wallet found")
+  }
+
+  // ERC20 token ABI (minimal for transfer function)
+  const abi = ["function transfer(address to, uint amount) returns (bool)", "function decimals() view returns (uint8)"]
+
+  const provider = getConnectedProvider()
+  const tokenContract = new ethers.Contract(tokenAddress, abi, provider)
+  const contractWithSigner = tokenContract.connect(signer)
+
+  try {
+    const decimals = await tokenContract.decimals()
+    const parsedAmount = ethers.parseUnits(amount, decimals)
+
+    const transaction = await contractWithSigner.transfer(toAddress, parsedAmount)
+    return transaction
+  } catch (error) {
+    console.error("Error transferring token from connected wallet:", error)
     throw error
   }
 }

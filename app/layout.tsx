@@ -3,7 +3,6 @@ import { Inter } from "next/font/google";
 import "@/app/globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import Header from "@/components/layout/header";
 import { Toaster } from "@/components/ui/toaster";
 import { Providers } from "./providers";
 
@@ -12,6 +11,14 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "FluidStake",
   description: "A modern cryptocurrency wallet with ethers.js integration",
+  icons: {
+    icon: [
+      { url: "/fluidstake.png", sizes: "512x512", type: "image/png" }, // Add sizes attribute
+    ],
+    apple: [
+      { url: "/fluidstake.png", sizes: "180x180", type: "image/png" }, // For Apple devices
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -25,7 +32,6 @@ export default function RootLayout({
         <Providers>
           <ThemeProvider
           >
-            {/* <Header /> */}
             <main>{children}</main>
             <Toaster />
           </ThemeProvider>

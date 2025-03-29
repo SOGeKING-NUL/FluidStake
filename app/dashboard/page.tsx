@@ -1,42 +1,49 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { useWalletStore } from "@/lib/store"
-import { useRouter } from "next/navigation"
-import { ArrowRight, Coins, Wallet, RefreshCw, Plus, LayoutDashboard } from "lucide-react"
-import { getNativeBalance } from "@/lib/ethereum"
-import { Skeleton } from "@/components/ui/skeleton"
-import CreateWalletDialog from "@/components/create-wallet-dialog"
-import { motion } from "framer-motion"
-import Header from "@/components/layout/header"
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { useWalletStore } from "@/lib/store";
+import { useRouter } from "next/navigation";
+import { ArrowRight, Wallet, RefreshCw, Plus, LayoutDashboard } from "lucide-react";
+import { getNativeBalance } from "@/lib/ethereum";
+import { Skeleton } from "@/components/ui/skeleton";
+import CreateWalletDialog from "@/components/create-wallet-dialog";
+import { motion } from "framer-motion";
+import Header from "@/components/layout/header";
 
 export default function DashboardPage() {
-  const { activeWallet, wallets } = useWalletStore()
-  const router = useRouter()
-  const [balance, setBalance] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [showCreateWallet, setShowCreateWallet] = useState(false)
+  const {
+    activeWallet,
+    wallets,
+    connectedAddress,
+    connectedWalletType,
+  } = useWalletStore();
+  
+  const router = useRouter();
+  const [balance, setBalance] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showCreateWallet, setShowCreateWallet] = useState(false);
+  const [isWalletDetailModalOpen, setIsWalletDetailModalOpen] = useState(false);
 
   useEffect(() => {
     if (activeWallet) {
-      fetchBalance(activeWallet.address)
+      fetchBalance(activeWallet.address);
     }
-  }, [activeWallet])
+  }, [activeWallet]);
 
   const fetchBalance = async (addr: string) => {
     try {
-      setIsLoading(true)
-      const bal = await getNativeBalance(addr)
-      setBalance(bal)
+      setIsLoading(true);
+      const bal = await getNativeBalance(addr);
+      setBalance(bal);
     } catch (error) {
-      console.error("Error fetching balance:", error)
+      console.error("Error fetching balance:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   if (!activeWallet) {
     return (
@@ -54,194 +61,233 @@ export default function DashboardPage() {
             <Plus className="mr-2 h-4 w-4" />
             Create Wallet
           </Button>
-          {showCreateWallet && <CreateWalletDialog open={showCreateWallet} onOpenChange={setShowCreateWallet} />}
+          {showCreateWallet && (
+            <CreateWalletDialog
+              open={showCreateWallet}
+              onOpenChange={setShowCreateWallet}
+            />
+          )}
         </div>
       </div>
-    )
+    );
   }
 
   return (
-      <>
-          <Header />  
-    <div className="container max-w-6xl py-6 md:py-10">
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight gradient-text">Dashboard</h1>
-            <p className="text-muted-foreground">Manage your crypto assets and wallets</p>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => activeWallet && fetchBalance(activeWallet.address)}
-              disabled={isLoading}
-              className="border-black/20 dark:border-white/20"
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
-              Refresh
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => setShowCreateWallet(true)}
-              className="bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Create Wallet
-            </Button>
-          </div>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card className="glass-card glow">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Active Wallet</CardTitle>
-              <CardDescription className="font-mono text-xs truncate">{activeWallet.address}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {isLoading ? <Skeleton className="h-8 w-24" /> : `${balance || "0.00"} ETH`}
-              </div>
-              <p className="text-xs text-muted-foreground">Sepolia Testnet</p>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card glow">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Your Wallets</CardTitle>
-              <CardDescription>
-                {wallets.length} wallet{wallets.length !== 1 ? "s" : ""} created
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex justify-between items-center">
-              <div className="text-2xl font-bold flex items-center">
-                <Wallet className="h-5 w-5 mr-2 text-muted-foreground" />
-                {wallets.length}
-              </div>
+    <>
+      <Header />
+      <div className="container max-w-6xl py-6 md:py-10">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight gradient-text">
+                Dashboard
+              </h1>
+              <p className="text-muted-foreground">
+                Manage your crypto assets and wallets
+              </p>
+            </div>
+            <div className="flex gap-2">
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                onClick={() => router.push("/wallets")}
-                className="hover:bg-white/10 dark:hover:bg-black/10"
+                onClick={() => activeWallet && fetchBalance(activeWallet.address)}
+                disabled={isLoading}
+                className="border-black/20 dark:border-white/20"
               >
-                Manage
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <RefreshCw
+                  className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+                />
+                Refresh
               </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card glow">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Token Operations</CardTitle>
-              <CardDescription>Check balances and transfer tokens</CardDescription>
-            </CardHeader>
-            <CardContent className="flex justify-between items-center">
-              <div className="text-2xl font-bold flex items-center">
-                <Coins className="h-5 w-5 mr-2 text-muted-foreground" />
-                Tokens
-              </div>
               <Button
-                variant="ghost"
                 size="sm"
-                onClick={() => router.push("/tokens")}
-                className="hover:bg-white/10 dark:hover:bg-black/10"
+                onClick={() => setShowCreateWallet(true)}
+                className="bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90"
               >
-                Explore
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <Plus className="h-4 w-4 mr-2" />
+                Create Wallet
               </Button>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </div>
 
-        <div className="mt-8">
-          <Tabs defaultValue="features">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="features">Features</TabsTrigger>
-              <TabsTrigger value="recent">Recent Activity</TabsTrigger>
-            </TabsList>
-            <TabsContent value="features" className="mt-6">
-              <div className="grid gap-6 md:grid-cols-2">
-                <Card className="overflow-hidden glass-card glow">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">Transfer ETH</CardTitle>
-                    <CardDescription>Manage and transfer ETH</CardDescription>
-                  </CardHeader>
-                  <CardContent className="pb-2">
-                    <div className="flex flex-col gap-2">
-                      <Button
-                        onClick={() => router.push("/transfer/eth")}
-                        className="w-full justify-between bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90"
-                      >
-                        Transfer ETH
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => activeWallet && fetchBalance(activeWallet.address)}
-                        className="w-full justify-between border-black/20 dark:border-white/20"
-                        disabled={isLoading}
-                      >
-                        {isLoading ? (
-                          <>
-                            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                            Refreshing...
-                          </>
-                        ) : (
-                          <>
-                            Refresh Balance
-                            <RefreshCw className="h-4 w-4" />
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+          {/* Cards Section */}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {/* Active Wallet Card */}
+            <Card className="glass-card glow">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Active Wallet</CardTitle>
+                <CardDescription className="font-mono text-xs truncate">
+                  {activeWallet.address}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {isLoading ? (
+                    <Skeleton className="h-8 w-24" />
+                  ) : (
+                    `${balance || "0.00"} ETH`
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">Sepolia Testnet</p>
+              </CardContent>
+            </Card>
 
-                <Card className="overflow-hidden glass-card glow">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">Transaction History</CardTitle>
-                    <CardDescription>View transaction details</CardDescription>
-                  </CardHeader>
-                  <CardContent className="pb-2">
-                    <div className="flex flex-col gap-2">
-                      <Button
-                        onClick={() => router.push("/transactions")}
-                        className="w-full justify-between bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90"
-                      >
-                        View Transactions
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => router.push("/wallets")}
-                        className="w-full justify-between border-black/20 dark:border-white/20"
-                      >
-                        Manage Wallets
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
+            {/* Created Wallets Card */}
+            <Card className="glass-card glow">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Your Wallets</CardTitle>
+                <CardDescription>{wallets.length} wallet{wallets.length !== 1 ? "s" : ""} created</CardDescription>
+              </CardHeader>
+              <CardContent className="flex justify-between items-center">
+                <div className="text-2xl font-bold flex items-center">
+                  <Wallet className="h-5 w-5 mr-2 text-muted-foreground" />
+                  {wallets.length}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => router.push("/wallets")}
+                  className="hover:bg-white/10 dark:hover:bg-black/10"
+                >
+                  Manage
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Connected Wallets Card */}
+            {connectedAddress && (
+              <Card className="glass-card glow">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Connected Wallet</CardTitle>
+                  <CardDescription>{connectedWalletType === "metamask" ? "MetaMask" : "Phantom"} Wallet</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="font-mono text-xs truncate">{connectedAddress}</div>
+                  <div className="flex gap-2 mt-4">
+                    {/* <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={disconnectWallet}
+                      className="hover:bg-red-600/90"
+                    >
+                      Disconnect
+                      <LogOut className="ml-2 h-4 w-4" />
+                    </Button> */}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Tabs Section */}
+          <div className="mt-8">
+            <Tabs defaultValue="features">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="features">Features</TabsTrigger>
+                <TabsTrigger value="recent">Recent Activity</TabsTrigger>
+              </TabsList>
+              <TabsContent value="features" className="mt-6">
+                <div className="grid gap-6 md:grid-cols-2">
+                  <Card className="overflow-hidden glass-card glow">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">Transfer ETH</CardTitle>
+                      <CardDescription>Manage and transfer ETH</CardDescription>
+                    </CardHeader>
+                    <CardContent className="pb-2">
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          onClick={() => router.push("/transfer/eth")}
+                          className="w-full justify-between bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90"
+                        >
+                          Transfer ETH
+                          <ArrowRight className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => activeWallet && fetchBalance(activeWallet.address)}
+                          className="w-full justify-between border-black/20 dark:border-white/20"
+                          disabled={isLoading}
+                        >
+                          {isLoading ? (
+                            <>
+                              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                              Refreshing...
+                            </>
+                          ) : (
+                            <>
+                              Refresh Balance
+                              <RefreshCw className="h-4 w-4" />
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="overflow-hidden glass-card glow">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">Transaction History</CardTitle>
+                      <CardDescription>View transaction details</CardDescription>
+                    </CardHeader>
+                    <CardContent className="pb-2">
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          onClick={() => router.push("/transactions")}
+                          className="w-full justify-between bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90"
+                        >
+                          View Transactions
+                          <ArrowRight className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => router.push("/wallets")}
+                          className="w-full justify-between border-black/20 dark:border-white/20"
+                        >
+                          Manage Wallets
+                          <ArrowRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+              <TabsContent value="recent" className="mt-6">
+                <div className="rounded-md border border-white/10 dark:border-black/10 glass-card">
+                  <div className="p-4 text-center text-sm text-muted-foreground">
+                    <div className="flex flex-col items-center justify-center py-4">
+                      <RefreshCw className="h-8 w-8 text-muted-foreground mb-2" />
+                      <p>No recent activity to display</p>
+                      <p className="text-xs mt-1">Your recent transactions will appear here</p>
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-            <TabsContent value="recent" className="mt-6">
-              <div className="rounded-md border border-white/10 dark:border-black/10 glass-card">
-                <div className="p-4 text-center text-sm text-muted-foreground">
-                  <div className="flex flex-col items-center justify-center py-4">
-                    <RefreshCw className="h-8 w-8 text-muted-foreground mb-2" />
-                    <p>No recent activity to display</p>
-                    <p className="text-xs mt-1">Your recent transactions will appear here</p>
                   </div>
                 </div>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </motion.div>
 
-        {showCreateWallet && <CreateWalletDialog open={showCreateWallet} onOpenChange={setShowCreateWallet} />}
-      </motion.div>
-    </div>
-      </>
-  )
+        {/* Modals */}
+        {showCreateWallet && (
+          <CreateWalletDialog 
+            open={showCreateWallet} 
+            onOpenChange={setShowCreateWallet} 
+          />
+        )}
+        
+        {/* {isWalletDetailModalOpen && (
+          <WalletDetailModal
+            open={isWalletDetailModalOpen}
+            onClose={() => setIsWalletDetailModalOpen(false)}
+            walletAddress={connectedAddress}
+            walletType={connectedWalletType}
+          />
+        )} */}
+      </div>
+    </>
+  );
 }
-
