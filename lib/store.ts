@@ -1,13 +1,26 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
+import { ethers } from "ethers"
 
 interface WalletState {
+  // Local wallets
   activeWallet: Wallet | null
   wallets: Wallet[]
+  
+  // Connected external wallet
+  connectedAddress: string | null
+  connectedWalletType: 'metamask' | 'phantom' | null
+  isWalletConnected: boolean
+  
+  // Actions for local wallets
   setActiveWallet: (address: string) => void
   addWallet: (wallet: Wallet) => void
   removeWallet: (address: string) => void
   updateWallet: (address: string, updates: Partial<Wallet>) => void
+  
+  // Actions for connected wallets
+  setConnectedWallet: (address: string | null, walletType: 'metamask' | 'phantom' | null) => void
+  disconnectWallet: () => void
 }
 
 export interface Wallet {
@@ -20,8 +33,16 @@ export interface Wallet {
 export const useWalletStore = create<WalletState>()(
   persist(
     (set, get) => ({
+      // Local wallets state
       activeWallet: null,
       wallets: [],
+      
+      // Connected external wallet state
+      connectedAddress: null,
+      connectedWalletType: null,
+      isWalletConnected: false,
+      
+      // Actions for local wallets
       setActiveWallet: (address) =>
         set((state) => {
           const wallet = state.wallets.find((w) => w.address === address) || null
@@ -60,14 +81,30 @@ export const useWalletStore = create<WalletState>()(
               state.activeWallet?.address === address ? { ...state.activeWallet, ...updates } : state.activeWallet,
           }
         }),
+      
+      // Actions for connected wallets
+      setConnectedWallet: (address, walletType) =>
+        set(() => ({
+          connectedAddress: address,
+          connectedWalletType: walletType,
+          isWalletConnected: address !== null,
+        })),
+      disconnectWallet: () =>
+        set(() => ({
+          connectedAddress: null,
+          connectedWalletType: null,
+          isWalletConnected: false,
+        })),
     }),
     {
       name: "wallet-storage",
       partialize: (state) => ({
         wallets: state.wallets,
         activeWallet: state.activeWallet,
+        connectedAddress: state.connectedAddress,
+        connectedWalletType: state.connectedWalletType,
+        isWalletConnected: state.isWalletConnected,
       }),
     },
   ),
 )
-
