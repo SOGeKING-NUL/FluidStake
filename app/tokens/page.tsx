@@ -13,6 +13,7 @@ import { getTokenInfo } from "@/lib/ethereum"
 import { Skeleton } from "@/components/ui/skeleton"
 import CreateWalletDialog from "@/components/create-wallet-dialog"
 import { motion } from "framer-motion"
+import Header from "@/components/layout/header"
 
 export default function TokensPage() {
   const { activeWallet } = useWalletStore()
@@ -74,6 +75,8 @@ export default function TokensPage() {
   }
 
   return (
+    <>
+    <Header />
     <div className="container max-w-6xl py-6 md:py-10">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -172,6 +175,7 @@ export default function TokensPage() {
         </div>
       </motion.div>
     </div>
+    </>
   )
 }
 

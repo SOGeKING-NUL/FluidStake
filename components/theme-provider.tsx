@@ -1,11 +1,28 @@
+// components/layout/theme-provider.tsx
 'use client'
 
-import * as React from 'react'
-import {
-  ThemeProvider as NextThemesProvider,
-  type ThemeProviderProps,
-} from 'next-themes'
+import { ThemeProvider as NextThemesProvider } from 'next-themes'
+import { type ReactNode, useEffect, useState } from 'react'
 
-export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
-  return <NextThemesProvider {...props}>{children}</NextThemesProvider>
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  const [mounted, setMounted] = useState(false)
+
+  // Avoid hydration mismatch by only rendering after mounting on client
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return null
+  }
+
+  return (
+    <NextThemesProvider
+      attribute="data-theme"
+      defaultTheme="dark" 
+      enableSystem={true}
+    >
+      {children}
+    </NextThemesProvider>
+  )
 }

@@ -165,3 +165,68 @@ export const getTransaction = async (txHash: string) => {
   }
 }
 
+// Get transaction history for an address using Alchemy API
+export const getTransactionHistory = async (address: string) => {
+  try {
+    const apiKeyMatch = RPC_URL.match(/\/v2\/([^/]+)$/);
+    const alchemyApiKey = apiKeyMatch ? apiKeyMatch[1] : "";
+    
+    const alchemyUrl = `https://eth-sepolia.g.alchemy.com/v2/${alchemyApiKey}`;
+    
+    const payload = {
+      id: 1,
+      jsonrpc: "2.0",
+      method: "alchemy_getAssetTransfers",
+      params: [{
+        fromBlock: "0x0",
+        toBlock: "pending", // Include pending transactions
+        category: ["external", "internal", "erc20", "erc721", "erc1155"],
+        withMetadata: true,
+        excludeZeroValue: false,
+        maxCount: "0x3E8", // Increased to 1000 transactions
+        fromAddress: address,
+        toAddress: address,
+        order: "desc" // Newest transactions first
+      }]
+    };
+    
+    // Add retry logic
+    let retries = 3;
+    while (retries > 0) {
+      try {
+        const response = await fetch(alchemyUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        const data = await response.json();
+        const transfers = data.result?.transfers || [];
+        
+        return transfers.map((transfer: any) => ({
+          hash: transfer.hash,
+          from: transfer.from,
+          to: transfer.to,
+          value: transfer.value?.toString() || "0",
+          asset: transfer.asset || "ETH",
+          category: transfer.category,
+          blockNumber: transfer.blockNum ? parseInt(transfer.blockNum, 16) : null,
+          status: transfer.blockNum ? "Confirmed" : "Pending",
+          timestamp: transfer.metadata?.blockTimestamp 
+            ? new Date(transfer.metadata.blockTimestamp).toLocaleString() 
+            : "Pending"
+        }));
+      } catch (error) {
+        retries--;
+        if (retries === 0) throw error;
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds before retry
+      }
+    }
+    return [];
+  } catch (error) {
+    console.error("Error getting transaction history:", error);
+    throw error;
+  }
+}
