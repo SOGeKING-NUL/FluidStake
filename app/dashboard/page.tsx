@@ -11,6 +11,7 @@ import { getNativeBalance } from "@/lib/ethereum"
 import { Skeleton } from "@/components/ui/skeleton"
 import CreateWalletDialog from "@/components/create-wallet-dialog"
 import { motion } from "framer-motion"
+import Header from "@/components/layout/header"
 
 export default function DashboardPage() {
   const { activeWallet, wallets } = useWalletStore()
@@ -60,6 +61,8 @@ export default function DashboardPage() {
   }
 
   return (
+      <>
+          <Header />  
     <div className="container max-w-6xl py-6 md:py-10">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -160,59 +163,7 @@ export default function DashboardPage() {
               <div className="grid gap-6 md:grid-cols-2">
                 <Card className="overflow-hidden glass-card glow">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">Create New Wallet</CardTitle>
-                    <CardDescription>Generate a new wallet with private key and mnemonic</CardDescription>
-                  </CardHeader>
-                  <CardContent className="pb-2">
-                    <div className="flex flex-col gap-2">
-                      <Button
-                        onClick={() => setShowCreateWallet(true)}
-                        className="w-full bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90"
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Create Random Wallet
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => router.push("/wallets/mnemonic")}
-                        className="w-full border-black/20 dark:border-white/20"
-                      >
-                        <Wallet className="h-4 w-4 mr-2" />
-                        Generate Mnemonic
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="overflow-hidden glass-card glow">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">Token Operations</CardTitle>
-                    <CardDescription>Manage and transfer tokens</CardDescription>
-                  </CardHeader>
-                  <CardContent className="pb-2">
-                    <div className="flex flex-col gap-2">
-                      <Button
-                        onClick={() => router.push("/tokens/balance")}
-                        className="w-full justify-between bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90"
-                      >
-                        Check Token Balance
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => router.push("/transfer/token")}
-                        className="w-full justify-between border-black/20 dark:border-white/20"
-                      >
-                        Transfer Tokens
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="overflow-hidden glass-card glow">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">ETH Operations</CardTitle>
+                    <CardTitle className="text-lg">Transfer ETH</CardTitle>
                     <CardDescription>Manage and transfer ETH</CardDescription>
                   </CardHeader>
                   <CardContent className="pb-2">
@@ -290,6 +241,7 @@ export default function DashboardPage() {
         {showCreateWallet && <CreateWalletDialog open={showCreateWallet} onOpenChange={setShowCreateWallet} />}
       </motion.div>
     </div>
+      </>
   )
 }
 

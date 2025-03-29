@@ -58,15 +58,11 @@ export default function Home() {
         />
       ))}
 
-      {/* Grid overlay */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
 
-      {/* Content container */}
       <div className="relative flex items-center justify-center w-full h-full px-6 md:px-12">
         <motion.div variants={containerVariants} initial="hidden" animate="visible" className="max-w-5xl">
-          {/* Hero Section */}
           <motion.div variants={itemVariants} className="text-center">
-            {/* Glowing badge */}
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -78,14 +74,13 @@ export default function Home() {
             </motion.div>
 
             {/* Heading with gradient text */}
-            <h1 className="text-6xl font-extrabold leading-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-200 to-purple-200 sm:text-7xl md:text-8xl">
-              Secure Your Crypto Future
+            <h1 className="text-6xl font-extrabold leading-tight bg-clip-text bg-gradient-to-r from-white via-indigo-200 to-purple-200 sm:text-7xl md:text-8xl">
+              FluidStake-Secure Your Crypto Future
             </h1>
 
             {/* Subheading */}
             <motion.p variants={itemVariants} className="max-w-2xl mx-auto mt-6 text-lg text-indigo-200/90 sm:text-xl">
-              Discover the easiest way to manage your cryptocurrency. Create wallets, track balances, and transfer
-              tokens—all in one place.
+            Stake Once, Transact Always
             </motion.p>
 
             {/* Feature highlights */}
@@ -115,7 +110,7 @@ export default function Home() {
             >
               <Button
                 size="lg"
-                onClick={() => setShowCreateWallet(true)}
+                onClick={() => router.push("/dashboard")}
                 className="px-8 text-lg font-medium transition-all duration-300 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white hover:shadow-lg hover:shadow-indigo-500/20"
               >
                 Get Started
@@ -125,7 +120,7 @@ export default function Home() {
               <Button
                 variant="outline"
                 size="lg"
-                onClick={() => router.push("/dashboard")}
+                onClick={() => router.push("/")}
                 className="px-8 text-lg font-medium text-indigo-200 transition-all duration-300 border-indigo-500/30 hover:bg-indigo-500/10 hover:border-indigo-400"
               >
                 Learn More
@@ -141,7 +136,7 @@ export default function Home() {
                 </div>
               ) : (
                 <div className="flex justify-center mt-4">
-                  <div className="p-1 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500">
+                  <div className="p-1 rounded-lg">
                     <div className="bg-gray-900 rounded-md">
                       <ConnectButton />
                     </div>

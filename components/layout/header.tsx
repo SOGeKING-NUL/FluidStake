@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useWalletStore } from "@/lib/store"
-import { Menu, X, Wallet } from "lucide-react"
+import { Menu, X } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -27,7 +27,6 @@ export default function Header() {
   const pathname = usePathname()
 
   const navigation = [
-    { name: "Home", href: "/" },
     { name: "Dashboard", href: "/dashboard" },
     { name: "Wallets", href: "/wallets" },
     { name: "Tokens", href: "/tokens" },
@@ -39,8 +38,8 @@ export default function Header() {
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
           <Link href="/" className="flex items-center gap-2">
-            <Wallet className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold">CryptoVault</span>
+            {/* <Wallet className="h-6 w-6 text-primary" /> */}
+            <span className="text-2xl font-bold">FluidStake</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6 ml-6">
             {navigation.map((item) => (
@@ -58,15 +57,6 @@ export default function Header() {
           </nav>
         </div>
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            aria-label="Toggle theme"
-            className="rounded-full"
-          >
-            {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </Button>
 
           {activeWallet ? (
             <DropdownMenu>

@@ -19,6 +19,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { motion } from "framer-motion"
+import Header from "@/components/layout/header"
 
 export default function WalletsPage() {
   const { wallets, removeWallet, setActiveWallet, activeWallet } = useWalletStore()
@@ -74,6 +75,8 @@ export default function WalletsPage() {
   }
 
   return (
+    <>
+    <Header />
     <div className="container max-w-6xl py-6 md:py-10">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
@@ -234,6 +237,7 @@ export default function WalletsPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+    </>
   )
 }
 
