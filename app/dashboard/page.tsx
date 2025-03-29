@@ -13,6 +13,50 @@ import CreateWalletDialog from "@/components/create-wallet-dialog";
 import { motion } from "framer-motion";
 import Header from "@/components/layout/header";
 
+// Modal Component for Staking
+function StakeModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [stakePercentage, setStakePercentage] = useState("");
+
+  const handleStake = () => {
+    // Mock staking logic (hardcoded value for now)
+    console.log(`Staking ${stakePercentage}% of assets`);
+    alert(`Successfully staked ${stakePercentage}% of your assets!`);
+    onClose();
+  };
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-black p-6 rounded-lg shadow-lg max-w-sm w-full">
+        <h2 className="text-xl font-bold mb-4">Liquid Staking</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          Enter the percentage of your assets you want to stake.
+        </p>
+        <input
+          type="number"
+          value={stakePercentage}
+          onChange={(e) => setStakePercentage(e.target.value)}
+          placeholder="Enter percentage (e.g., 50)"
+          className="w-full p-2 border rounded-md mb-4"
+        />
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={onClose} className="border-black/20 dark:border-white/20">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleStake}
+            disabled={!stakePercentage || Number(stakePercentage) <= 0 || Number(stakePercentage) > 100}
+            className="bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90"
+          >
+            Stake
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const {
     activeWallet,
@@ -26,6 +70,9 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showCreateWallet, setShowCreateWallet] = useState(false);
   const [isWalletDetailModalOpen, setIsWalletDetailModalOpen] = useState(false);
+  
+  // State for Stake Modal
+  const [isStakeModalOpen, setIsStakeModalOpen] = useState(false);
 
   useEffect(() => {
     if (activeWallet) {
@@ -81,15 +128,13 @@ export default function DashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
+          {/* Dashboard Header */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight gradient-text">
-                Dashboard
-              </h1>
-              <p className="text-muted-foreground">
-                Manage your crypto assets and wallets
-              </p>
+              <h1 className="text-3xl font-bold tracking-tight gradient-text">Dashboard</h1>
+              <p className="text-muted-foreground">Manage your crypto assets and wallets</p>
             </div>
+            {/* Refresh & Create Wallet Buttons */}
             <div className="flex gap-2">
               <Button
                 variant="outline"
@@ -111,10 +156,17 @@ export default function DashboardPage() {
                 <Plus className="h-4 w-4 mr-2" />
                 Create Wallet
               </Button>
+              {/* Stake Button */}
+              <Button
+                size="sm"
+                onClick={() => setIsStakeModalOpen(true)}
+                className="bg-blue-600 text-white hover:bg-blue-700"
+              >
+                Stake Assets
+              </Button>
             </div>
           </div>
 
-          {/* Cards Section */}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {/* Active Wallet Card */}
             <Card className="glass-card glow">
@@ -269,6 +321,7 @@ export default function DashboardPage() {
               </TabsContent>
             </Tabs>
           </div>
+
         </motion.div>
 
         {/* Modals */}
@@ -278,15 +331,13 @@ export default function DashboardPage() {
             onOpenChange={setShowCreateWallet} 
           />
         )}
-        
-        {/* {isWalletDetailModalOpen && (
-          <WalletDetailModal
-            open={isWalletDetailModalOpen}
-            onClose={() => setIsWalletDetailModalOpen(false)}
-            walletAddress={connectedAddress}
-            walletType={connectedWalletType}
+        {/* Stake Modal */}
+        {isStakeModalOpen && (
+          <StakeModal 
+            open={isStakeModalOpen} 
+            onClose={() => setIsStakeModalOpen(false)} 
           />
-        )} */}
+        )}
       </div>
     </>
   );
