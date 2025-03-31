@@ -22,28 +22,17 @@ contract WETHStaker {
     event PoolVerified(bool isValid);
     event DepositSuccessful(address indexed user, uint256 amount);
     
-    /**
-     * @dev Get the current Pool address from the AddressesProvider
-     * @return The current Aave Pool address
-     */
+    
     function getPoolAddress() public view returns (address) {
         return IPoolAddressesProvider(ADDRESSES_PROVIDER).getPool();
     }
     
-    /**
-     * @dev Check a user's WETH allowance for the Aave Pool
-     * @param user The address of the user to check
-     * @return The amount of WETH the user has approved for the Aave Pool
-     */
     function checkAllowance(address user) external view returns (uint256) {
         address pool = getPoolAddress();
         return IERC20(WETH_ADDRESS).allowance(user, pool);
     }
     
-    /**
-     * @dev Verify Pool address by checking WETH in reserves list
-     * @return isValid True if WETH is in Aave's reserves
-     */
+
     function isPoolValid() external returns (bool isValid) {
         try this.checkReserveExists() {
             emit PoolVerified(true);
@@ -54,7 +43,6 @@ contract WETHStaker {
         }
     }
     
-    // Internal function to reduce stack depth
     function checkReserveExists() external view returns (bool) {
         address pool = getPoolAddress();
         address[] memory reserves = IPool(pool).getReservesList();
@@ -64,10 +52,7 @@ contract WETHStaker {
         return false;
     }
     
-    /**
-     * @dev Supply WETH to verified Pool
-     * @param weiAmount Amount to supply in wei
-     */
+   
     function supplyWETH(uint256 weiAmount) external {
         require(weiAmount != 0, "Amount cannot be zero");
         require(this.isPoolValid(), "Invalid Pool address");
